@@ -1,11 +1,11 @@
-import cloudflare from 'cloudflare'
-import publicIp from 'public-ip'
+import {publicIpv4} from 'public-ip'
+import {createClient} from './cloudflare.js'
 
 const required = ['zone', 'record']
 const requiredForList = []
 
 function resolveIP(options) {
-  return options.ip ? Promise.resolve(options.ip) : publicIp.v4()
+  return options.ip ? Promise.resolve(options.ip) : publicIpv4()
 }
 
 function isEditable(zone) {
@@ -31,7 +31,7 @@ function requireKeyOrToken(options) {
 }
 
 async function recordsForZone(zone, client) {
-  const records = (await client.dnsRecords.browse(zone.id)).result
+  const records = await client.getDnsRecords(zone.id)
   return {
     id: zone.id,
     name: zone.name,
@@ -41,8 +41,8 @@ async function recordsForZone(zone, client) {
 
 function getClient(options) {
   return options.apiToken
-    ? cloudflare({token: options.apiToken})
-    : cloudflare({
+    ? createClient({token: options.apiToken})
+    : createClient({
         email: options.email,
         key: options.apiKey,
       })
@@ -61,7 +61,7 @@ export async function update(options) {
 
   const [ip, currentRecord] = await Promise.all([
     resolveIP(options),
-    client.dnsRecords.read(options.zone, options.record).then((res) => res.result),
+    client.getDnsRecord(options.zone, options.record),
   ])
 
   if (ip === currentRecord.content) {
@@ -70,8 +70,8 @@ export async function update(options) {
   }
 
   // Record is outdated, update
-  const newRecord = {...currentRecord, content: ip}
-  await client.dnsRecords.edit(options.zone, options.record, newRecord)
+  const newRecord = {name: currentRecord.name, type: currentRecord.type, content: ip}
+  await client.updateDnsRecord(options.zone, options.record, newRecord)
   return newRecord
 }
 
@@ -85,7 +85,7 @@ export async function list(options) {
   })
 
   const client = getClient(options)
-  const allZones = (await client.zones.browse()).result
+  const allZones = await client.getZones()
   const editableZones = allZones.filter(isEditable)
   const records = await Promise.all(editableZones.map((zone) => recordsForZone(zone, client)))
   return records.filter((zone) => zone.records.length > 0)

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 import updateNotifier from 'update-notifier'
 import width from 'string-width'
 import meow from 'meow'
@@ -29,6 +29,7 @@ const cli = meow(
     --email <email> Email used for authentication (also requires \`--api-key\`)
     --api-key <apiKey> API key used for authentication (also requires \`--email\`)
     --list Prints the zones and dns records available for the API key
+    --help Shows this help text
 
   Examples
     # Update a record with a specific IP address
@@ -72,7 +73,7 @@ const cli = meow(
         type: 'boolean',
       },
     },
-  }
+  },
 )
 
 /* eslint-disable no-process-env */
@@ -100,8 +101,8 @@ function printList(zones) {
           'IN',
           record.type,
           record.content,
-        ].map(trim)
-      )
+        ].map(trim),
+      ),
     )
 
     const columnWidths = []
@@ -119,8 +120,12 @@ function printList(zones) {
 }
 /* eslint-enable no-console */
 
+if (cli.flags.help) {
+  cli.showHelp()
+}
+
 if (options.list) {
   list(options).then(printList)
 } else {
-  update(options)
+  update(options).then(console.log)
 }
