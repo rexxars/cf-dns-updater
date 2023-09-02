@@ -1,6 +1,6 @@
 {
   "name": "cf-dns-updater",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Update a DNS record on CloudFlare with a new IP",
   "type": "module",
   "main": "./src/api.js",
