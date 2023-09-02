@@ -127,5 +127,5 @@ if (cli.flags.help) {
 if (options.list) {
   list(options).then(printList)
 } else {
-  update(options).then(console.log)
+  update(options)
 }
