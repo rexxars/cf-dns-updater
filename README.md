@@ -70,6 +70,18 @@ update({
 })
 ```
 
+## Docker usage
+
+The `ghcr.io/rexxars/cf-dns-updater:latest` [Docker image](https://github.com/rexxars/cf-dns-updater/pkgs/container/cf-dns-updater) can be used to update a DNS record. In this case, you'll want to use environment variables to configure the tool:
+
+```bash
+docker run \
+  -e CF_ZONE_ID=yourZoneId \
+  -e CF_DNS_RECORD_ID=yourRecordId \
+  -e CF_API_TOKEN=yourApiToken \
+  ghcr.io/rexxars/cf-dns-updater:latest
+```
+
 ## License
 
 MIT © [Espen Hovlandsdal](https://espen.codes/)
