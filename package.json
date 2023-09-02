@@ -26,9 +26,11 @@
     "update-notifier": "^6.0.2"
   },
   "devDependencies": {
+    "@sanity/semantic-release-preset": "^4.0.2",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-sanity": "^6.0.0",
-    "prettier": "^3.0.3"
+    "prettier": "^3.0.3",
+    "semantic-release": "^21.1.1"
   }
 }
