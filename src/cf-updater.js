@@ -7,7 +7,7 @@ import width from 'string-width'
 import meow from 'meow'
 import {list, update} from './api.js'
 
-const pkgPath = path.join(new URL('.', import.meta.url).pathname, 'package.json')
+const pkgPath = path.join(new URL('..', import.meta.url).pathname, 'package.json')
 
 // eslint-disable-next-line no-sync
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
