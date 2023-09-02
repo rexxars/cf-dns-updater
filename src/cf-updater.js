@@ -13,6 +13,7 @@ const pkgPath = path.join(new URL('..', import.meta.url).pathname, 'package.json
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
 
 const trim = (item) => `${item || ''}`.trim()
+const trimEnv = (item) => (typeof item === 'undefined' || item === '' ? undefined : item.trim())
 
 updateNotifier({pkg}).notify()
 
@@ -78,11 +79,11 @@ const cli = meow(
 
 /* eslint-disable no-process-env */
 const options = {
-  zone: process.env.CF_ZONE_ID,
-  record: process.env.CF_DNS_RECORD_ID,
-  email: process.env.CF_AUTH_EMAIL,
-  apiKey: process.env.CF_API_KEY,
-  apiToken: process.env.CF_API_TOKEN,
+  zone: trimEnv(process.env.CF_ZONE_ID),
+  record: trimEnv(process.env.CF_DNS_RECORD_ID),
+  email: trimEnv(process.env.CF_AUTH_EMAIL),
+  apiKey: trimEnv(process.env.CF_API_KEY),
+  apiToken: trimEnv(process.env.CF_API_TOKEN),
   ...cli.flags,
 }
 /* eslint-enable no-process-env */
