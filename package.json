@@ -3,9 +3,9 @@
   "version": "2.0.0",
   "description": "Update a DNS record on CloudFlare with a new IP",
   "type": "module",
-  "main": "api.js",
+  "main": "./src/api.js",
   "bin": {
-    "cf-dns-updater": "cf-updater.js"
+    "cf-dns-updater": "./src/cf-updater.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
