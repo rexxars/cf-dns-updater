@@ -53,7 +53,7 @@ $ cf-dns-updater --help
 
 ## Node usage
 
-Requires Node 14 or above.
+Requires Node 18 or above.
 
 ```js
 import {update, list} from 'cf-dns-updater'
