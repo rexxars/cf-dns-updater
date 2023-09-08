@@ -17,6 +17,14 @@
     "node": ">=18.0.0"
   },
   "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
+  "homepage": "https://github.com/rexxars/cf-dns-updater#readme",
+  "bugs": {
+    "url": "https://github.com/rexxars/cf-dns-updater/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/rexxars/cf-dns-updater.git"
+  },
   "license": "MIT",
   "dependencies": {
     "get-it": "^8.4.3",
