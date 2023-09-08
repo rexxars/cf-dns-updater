@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.4](https://github.com/rexxars/cf-dns-updater/compare/v3.0.3...v3.0.4) (2023-09-08)
+
+### Bug Fixes
+
+- add repo urls to package.json ([40e7586](https://github.com/rexxars/cf-dns-updater/commit/40e7586fe0d841f8c1dcb6e4cab312f1ea44ac11))
+
 ## [3.0.3](https://github.com/rexxars/cf-dns-updater/compare/v3.0.2...v3.0.3) (2023-09-02)
 
 ### Bug Fixes
