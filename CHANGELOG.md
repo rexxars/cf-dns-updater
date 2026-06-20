@@ -5,6 +5,17 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.0](https://github.com/rexxars/cf-dns-updater/compare/v3.0.4...v4.0.0) (2026-06-20)
+
+### ⚠ BREAKING CHANGES
+
+- Module is now ESM-only and requires Node.js 24 or
+  higher
+
+### Features
+
+- esm-only, node.js 24 or higher required ([#1](https://github.com/rexxars/cf-dns-updater/issues/1)) ([7dffda2](https://github.com/rexxars/cf-dns-updater/commit/7dffda2880edbbf8a9258daa64c4f4a91c2d87b5))
+
 ## [3.0.4](https://github.com/rexxars/cf-dns-updater/compare/v3.0.3...v3.0.4) (2023-09-08)
 
 ### Bug Fixes
