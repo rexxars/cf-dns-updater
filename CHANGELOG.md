@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.0](https://github.com/rexxars/cf-dns-updater/compare/v4.0.0...v4.1.0) (2026-06-20)
+
+### Features
+
+- add interval option ([18035f9](https://github.com/rexxars/cf-dns-updater/commit/18035f9269e856dc9d37c3223e9facf0a8cb93b6))
+
 ## [4.0.0](https://github.com/rexxars/cf-dns-updater/compare/v3.0.4...v4.0.0) (2026-06-20)
 
 ### ⚠ BREAKING CHANGES
