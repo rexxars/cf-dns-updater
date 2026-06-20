@@ -2,43 +2,61 @@
   "name": "cf-dns-updater",
   "version": "3.0.4",
   "description": "Update a DNS record on CloudFlare with a new IP",
-  "type": "module",
-  "main": "./src/api.js",
-  "bin": {
-    "cf-dns-updater": "./src/cf-updater.js"
-  },
-  "files": [
-    "src"
-  ],
-  "scripts": {
-    "test": "eslint ."
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
   "homepage": "https://github.com/rexxars/cf-dns-updater#readme",
   "bugs": {
     "url": "https://github.com/rexxars/cf-dns-updater/issues"
   },
+  "license": "MIT",
+  "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/rexxars/cf-dns-updater.git"
   },
-  "license": "MIT",
+  "bin": {
+    "cf-dns-updater": "./dist/cf-updater.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/api.js",
+  "types": "./dist/api.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
+    "prepublishOnly": "npm run build"
+  },
   "dependencies": {
-    "get-it": "^8.4.3",
-    "meow": "^12.1.1",
-    "public-ip": "^6.0.1",
-    "string-width": "^6.1.0",
-    "update-notifier": "^6.0.2"
+    "get-it": "^9.0.1",
+    "public-ip": "^8.0.0",
+    "string-width": "^8.2.1",
+    "update-notifier": "^7.3.1"
   },
   "devDependencies": {
-    "@sanity/semantic-release-preset": "^4.0.2",
-    "eslint": "^8.48.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-config-sanity": "^6.0.0",
-    "prettier": "^3.0.3",
-    "semantic-release": "^21.1.1"
+    "@sanity/semantic-release-preset": "^6.0.0",
+    "@types/node": "^26.0.0",
+    "@types/update-notifier": "^6.0.8",
+    "oxfmt": "^0.55.0",
+    "oxlint": "^1.70.0",
+    "semantic-release": "^25.0.5",
+    "tsdown": "^0.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }
