@@ -18,12 +18,13 @@ const helpText = `
     $ cf-dns-updater --zone <zoneId> --record <recordId> --api-token <apiToken>
 
   Options
-    --ip <someIp> IP to update record with. Defaults to current external IP.
+    --ip <someIp> IP to update record with. Defaults to current external IP. Cannot be combined with \`--interval\`.
     --zone <zoneId> Zone ID the record belongs to
     --record <recordId> DNS record ID to update
     --api-token <apiToken> API token used for authentication
     --email <email> Email used for authentication (also requires \`--api-key\`)
     --api-key <apiKey> API key used for authentication (also requires \`--email\`)
+    --interval <seconds> Keep running, re-checking the external IP every <seconds> and updating when it changes. Cannot be combined with \`--ip\`.
     --list Prints the zones and dns records available for the API key
     --version Shows the installed version
     --help Shows this help text
@@ -35,6 +36,9 @@ const helpText = `
     # Update a record with your current external IP
     $ cf-dns-updater --zone zoneId --record recordId --api-token myApiToken
 
+    # Keep running, checking every 5 minutes and updating when the IP changes
+    $ cf-dns-updater --zone zoneId --record recordId --api-token myApiToken --interval 300
+
     # List records your API key has access to edit
     $ cf-dns-updater --list --api-token myApiToken
 
@@ -44,21 +48,32 @@ const helpText = `
     --email = CF_AUTH_EMAIL
     --api-key = CF_API_KEY
     --api-token = CF_API_TOKEN
+    --interval = CF_INTERVAL
 `
 
-const {values: flags} = parseArgs({
-  options: {
-    ip: {type: 'string'},
-    zone: {type: 'string'},
-    record: {type: 'string'},
-    email: {type: 'string'},
-    'api-key': {type: 'string'},
-    'api-token': {type: 'string'},
-    list: {type: 'boolean'},
-    version: {type: 'boolean'},
-    help: {type: 'boolean'},
-  },
-})
+function parseFlags() {
+  try {
+    return parseArgs({
+      options: {
+        ip: {type: 'string'},
+        zone: {type: 'string'},
+        record: {type: 'string'},
+        email: {type: 'string'},
+        'api-key': {type: 'string'},
+        'api-token': {type: 'string'},
+        interval: {type: 'string'},
+        list: {type: 'boolean'},
+        version: {type: 'boolean'},
+        help: {type: 'boolean'},
+      },
+    }).values
+  } catch (error) {
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
+    process.exit(1)
+  }
+}
+
+const flags = parseFlags()
 
 if (flags.help) {
   console.log(helpText)
@@ -76,6 +91,26 @@ function trimEnv(value: string | undefined): string | undefined {
   return value === undefined || value === '' ? undefined : value.trim()
 }
 
+function parseIntervalSeconds(value: string | undefined): number | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  const seconds = Number(value)
+  if (!Number.isInteger(seconds) || seconds <= 0) {
+    console.error(
+      `Error: invalid --interval "${value}" (expected a positive whole number of seconds)`,
+    )
+    process.exit(1)
+  }
+
+  return seconds
+}
+
+function logLine(message: string): void {
+  console.log(`[${new Date().toISOString()}] ${message}`)
+}
+
 const env = process.env
 const options: UpdateOptions = {
   zone: flags.zone ?? trimEnv(env.CF_ZONE_ID) ?? '',
@@ -84,6 +119,13 @@ const options: UpdateOptions = {
   apiKey: flags['api-key'] ?? trimEnv(env.CF_API_KEY),
   apiToken: flags['api-token'] ?? trimEnv(env.CF_API_TOKEN),
   ip: flags.ip,
+}
+
+const intervalSeconds = parseIntervalSeconds(flags.interval ?? trimEnv(env.CF_INTERVAL))
+
+if (options.ip !== undefined && intervalSeconds !== undefined) {
+  console.error('Error: `--ip` and `--interval` cannot be used together')
+  process.exit(1)
 }
 
 function printList(zones: ZoneWithRecords[]): void {
@@ -114,8 +156,33 @@ function printList(zones: ZoneWithRecords[]): void {
   }
 }
 
+async function watch(seconds: number): Promise<void> {
+  const controller = new AbortController()
+  const stop = (): void => controller.abort()
+  process.once('SIGINT', stop)
+  process.once('SIGTERM', stop)
+
+  logLine(`Watching ${options.zone}/${options.record}; checking every ${seconds}s`)
+
+  await update({
+    ...options,
+    interval: seconds * 1000,
+    signal: controller.signal,
+    onUpdate: ({record, changed}) => {
+      logLine(
+        changed ? `Updated ${record.name} -> ${record.content}` : `No change (${record.content})`,
+      )
+    },
+    onError: (error) => {
+      logLine(`Error: ${error instanceof Error ? error.message : String(error)}`)
+    },
+  })
+}
+
 if (flags.list) {
   printList(await list(options))
+} else if (intervalSeconds !== undefined) {
+  await watch(intervalSeconds)
 } else {
   await update(options)
 }

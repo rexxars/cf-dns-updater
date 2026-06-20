@@ -84,6 +84,18 @@ describe('update', () => {
     })
   })
 
+  test('throws when both ip and interval are provided', async () => {
+    await expect(
+      update({zone: 'zone1', record: 'rec1', apiToken: 't', ip: '1.2.3.4', interval: 1000}),
+    ).rejects.toThrow('Cannot provide both `ip` and `interval`')
+  })
+
+  test('throws when interval is not a positive number', async () => {
+    await expect(
+      update({zone: 'zone1', record: 'rec1', apiToken: 't', interval: 0}),
+    ).rejects.toThrow('`interval` must be a positive number of milliseconds')
+  })
+
   test('resolves the external IP when none is provided', async () => {
     publicIpMock.mockResolvedValue('203.0.113.55')
     requestMock.mockImplementation((options: {method?: string}) =>
@@ -96,6 +108,83 @@ describe('update', () => {
 
     expect(publicIpMock).toHaveBeenCalledTimes(1)
     expect(result).toEqual({name: 'home.example.com', type: 'A', content: '203.0.113.55'})
+  })
+})
+
+describe('update (interval mode)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('checks repeatedly until the signal is aborted', async () => {
+    publicIpMock.mockResolvedValue('198.51.100.1')
+    requestMock.mockImplementation(() => jsonResponse({result: currentRecord}))
+
+    const controller = new AbortController()
+    const results: {changed: boolean}[] = []
+
+    await update({
+      zone: 'zone1',
+      record: 'rec1',
+      apiToken: 't',
+      interval: 1,
+      signal: controller.signal,
+      onUpdate: (result) => {
+        results.push({changed: result.changed})
+        if (results.length >= 3) controller.abort()
+      },
+    })
+
+    expect(results.length).toBeGreaterThanOrEqual(3)
+    expect(results.every((result) => result.changed === false)).toBe(true)
+  })
+
+  test('reports errors and keeps running', async () => {
+    publicIpMock.mockResolvedValue('203.0.113.10')
+    let calls = 0
+    requestMock.mockImplementation(() => {
+      calls++
+      if (calls === 1) return Promise.reject(new Error('boom'))
+      if (calls === 2) return jsonResponse({result: currentRecord})
+      return jsonResponse({result: {}})
+    })
+
+    const controller = new AbortController()
+    const errors: unknown[] = []
+    const updates: {changed: boolean}[] = []
+
+    await update({
+      zone: 'zone1',
+      record: 'rec1',
+      apiToken: 't',
+      interval: 1,
+      signal: controller.signal,
+      onError: (error) => {
+        errors.push(error)
+      },
+      onUpdate: (result) => {
+        updates.push({changed: result.changed})
+        controller.abort()
+      },
+    })
+
+    expect(errors).toHaveLength(1)
+    expect(updates).toEqual([{changed: true}])
+  })
+
+  test('does not run when the signal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+
+    await update({
+      zone: 'zone1',
+      record: 'rec1',
+      apiToken: 't',
+      interval: 1,
+      signal: controller.signal,
+    })
+
+    expect(requestMock).not.toHaveBeenCalled()
   })
 })
 

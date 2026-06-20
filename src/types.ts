@@ -4,10 +4,28 @@ export interface AuthOptions {
   apiToken?: string
 }
 
+export interface UpdateResult {
+  record: DnsRecord | NewDnsRecord
+  changed: boolean
+}
+
 export interface UpdateOptions extends AuthOptions {
   zone: string
   record: string
+  /** Fixed IP to update the record with. Mutually exclusive with `interval`. */
   ip?: string
+  /**
+   * When set (in milliseconds), check repeatedly at this interval instead of
+   * running once. Each check resolves the current public IP and updates the
+   * record if it changed. Mutually exclusive with `ip`.
+   */
+  interval?: number
+  /** Abort signal used to stop interval mode. */
+  signal?: AbortSignal
+  /** Invoked after every successful check in interval mode. */
+  onUpdate?: (result: UpdateResult) => void
+  /** Invoked when a check fails in interval mode. The loop keeps running. */
+  onError?: (error: unknown) => void
 }
 
 export type ListOptions = AuthOptions
