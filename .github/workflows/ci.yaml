@@ -27,13 +27,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm test
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
 
   release:
     needs: [test]
@@ -47,16 +51,17 @@ jobs:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Need to fetch entire commit history to
           # analyze every commit since last release
           fetch-depth: 0
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run build
       - name: Semantic release
         id: semantic
         uses: cycjimmy/semantic-release-action@v4.0.0
